@@ -15,61 +15,37 @@ typedef uint16 NodeIndex;
 typedef uint32 NodeIndex;
 #endif
 
+typedef struct _Node* Node;
+
 static const uint32 NUM_TOP_BINS = 32;
 static const uint32 BINS_PER_LEAF = 8;
 static const uint32 TOP_BINS_INDEX_SHIFT = 3;
 static const uint32 LEAF_BINS_INDEX_MASK = 0x7;
 static const uint32 NUM_LEAF_BINS = NUM_TOP_BINS * BINS_PER_LEAF;
 
-struct Allocation {
-    static const uint32 NO_SPACE = 0xffffffff;
+extern const uint32 NO_SPACE;  // Declaración, sin definir aquí
 
-    uint32 offset = NO_SPACE;
-    NodeIndex metadata = NO_SPACE;  // internal: node index
-};
+#define EmptyAllocation \
+    { .offset = NO_SPACE, .metadata = NO_SPACE }
 
-struct StorageReport {
+typedef struct {
+    uint32 offset;
+    NodeIndex metadata;  // internal: node index
+} Allocation;
+
+typedef struct {
     uint32 totalFreeSpace;
     uint32 largestFreeRegion;
-};
+} StorageReport;
 
-struct StorageReportFull {
-    struct Region {
+typedef struct {
+    struct {
         uint32 size;
         uint32 count;
-    };
+    } freeRegions[NUM_LEAF_BINS];
+} StorageReportFull;
 
-    Region freeRegions[NUM_LEAF_BINS];
-};
-
-struct Allocator {
-    Allocator(uint32 size, uint32 maxAllocs = 128 * 1024);
-    Allocator(Allocator&& other);
-    ~Allocator();
-    void reset();
-
-    Allocation allocate(uint32 size);
-    void free(Allocation allocation);
-
-    uint32 allocationSize(Allocation allocation) const;
-    StorageReport storageReport() const;
-    StorageReportFull storageReportFull() const;
-
-    uint32 insertNodeIntoBin(uint32 size, uint32 dataOffset);
-    void removeNodeFromBin(uint32 nodeIndex);
-
-    struct Node {
-        static constexpr NodeIndex unused = 0xffffffff;
-
-        uint32 dataOffset = 0;
-        uint32 dataSize = 0;
-        NodeIndex binListPrev = unused;
-        NodeIndex binListNext = unused;
-        NodeIndex neighborPrev = unused;
-        NodeIndex neighborNext = unused;
-        bool used = false;  // TODO: Merge as bit flag
-    };
-
+typedef struct {
     uint32 m_size;
     uint32 m_maxAllocs;
     uint32 m_freeStorage;
@@ -78,7 +54,19 @@ struct Allocator {
     uint8 m_usedBins[NUM_TOP_BINS];
     NodeIndex m_binIndices[NUM_LEAF_BINS];
 
-    Node* m_nodes;
+    Node m_nodes;
     NodeIndex* m_freeNodes;
     uint32 m_freeOffset;
-};
+} Allocator;
+
+void initAllocator(Allocator* allocator,
+                   const uint32 size,
+                   const uint32 max_allocs);
+
+void resetAllocator(Allocator* allocator);
+
+void terminateAllocator(Allocator* allocator);
+
+Allocation allocate(Allocator* allocator, const uint32 size);
+
+void freeAllocation(Allocator* allocator, Allocation allocation);
