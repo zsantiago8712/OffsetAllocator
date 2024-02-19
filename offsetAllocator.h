@@ -17,11 +17,11 @@ typedef uint32 NodeIndex;
 
 typedef struct _Node* Node;
 
-static const uint32 NUM_TOP_BINS = 32;
-static const uint32 BINS_PER_LEAF = 8;
-static const uint32 TOP_BINS_INDEX_SHIFT = 3;
-static const uint32 LEAF_BINS_INDEX_MASK = 0x7;
-static const uint32 NUM_LEAF_BINS = NUM_TOP_BINS * BINS_PER_LEAF;
+#define NUM_TOP_BINS 32
+#define BINS_PER_LEAF 8
+#define TOP_BINS_INDEX_SHIFT 3
+#define LEAF_BINS_INDEX_MASK 0x7
+#define NUM_LEAF_BINS (NUM_TOP_BINS * BINS_PER_LEAF)
 
 extern const uint32 NO_SPACE;  // Declaración, sin definir aquí
 

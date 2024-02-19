@@ -159,25 +159,6 @@ void initAllocator(Allocator* allocator,
     resetAllocator(allocator);
 }
 
-// Allocator::Allocator(Allocator&& other)
-//     : m_size(other.m_size),
-//       m_maxAllocs(other.m_maxAllocs),
-//       m_freeStorage(other.m_freeStorage),
-//       m_usedBinsTop(other.m_usedBinsTop),
-//       m_nodes(other.m_nodes),
-//       m_freeNodes(other.m_freeNodes),
-//       m_freeOffset(other.m_freeOffset) {
-//     memcpy(m_usedBins, other.m_usedBins, sizeof(uint8) * NUM_TOP_BINS);
-//     memcpy(m_binIndices, other.m_binIndices, sizeof(NodeIndex) *
-//     NUM_LEAF_BINS);
-//
-//     other.m_nodes = nullptr;
-//     other.m_freeNodes = nullptr;
-//     other.m_freeOffset = 0;
-//     other.m_maxAllocs = 0;
-//     other.m_usedBinsTop = 0;
-// }
-
 void resetAllocator(Allocator* allocator) {
     allocator->m_freeStorage = 0;
     allocator->m_usedBinsTop = 0;
@@ -187,12 +168,10 @@ void resetAllocator(Allocator* allocator) {
         allocator->m_usedBins[i] = 0;
     }
 
-    // TODO: cambiar los estatics de estructuras por defines o algo distinto
     for (uint32 i = 0; i < NUM_LEAF_BINS; i++) {
         allocator->m_binIndices[i] = NODE_UNUSED;
     }
 
-    // TODO: cambiar deltes por free
     if (allocator->m_nodes) {
         free(allocator->m_nodes);
     }
@@ -200,7 +179,6 @@ void resetAllocator(Allocator* allocator) {
         free(allocator->m_freeNodes);
     }
 
-    // TODO: cambiar new por malloc o calloc
     allocator->m_nodes =
         (Node)calloc(allocator->m_maxAllocs, sizeof(struct _Node));
     allocator->m_freeNodes =
@@ -217,7 +195,6 @@ void resetAllocator(Allocator* allocator) {
 
     // Start state: Whole storage as one big node
     // Algorithm will split remainders and push them back as smaller nodes
-    // TODO: crear funncion insertNodeIntoBin
     insertNodeIntoBin(allocator, allocator->m_size, 0);
 }
 
